@@ -1,0 +1,10 @@
+component,quantity,notes
+ESP32 DevKit,1,Main controller
+SG90 servo motor,6,Motion actuators
+HC-SR04 ultrasonic sensor,1,Distance sensor
+LM386 audio amplifier,1,Audio output
+Speaker,1,Audio output
+Battery pack,1,Power supply
+Switch,1,Power control
+Jumper wires,1 set,Wiring
+Screws and fasteners,1 set,Assembly

@@ -1,69 +1,26 @@
-# Prerequisites
-*.d
+# Secrets
+firmware/src/config/Secrets.h
+*.env
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Build Arduino
+*.hex
+*.elf
+*.bin
+firmware/build/
 
-# Precompiled Headers
-*.gch
-*.pch
+# IDE
+.vscode/
+.idea/
 
-# Linker files
-*.ilk
+# OS
+.DS_Store
+Thumbs.db
 
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-*.so.*
-
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
-# Build directories
-build/
-Build/
-build-*/
-
-# CMake generated files
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-install_manifest.txt
-compile_commands.json
-
-# Temporary files
+# Temporaires
 *.tmp
-*.log
 *.bak
-*.swp
+*.log
 
-# vcpkg
-vcpkg_installed/
-
-# debug information files
-*.dwo
-
-# test output & cache
-Testing/
-.cache/
+# Fichiers slicer 3D
+*.gcode
+*.3mf
