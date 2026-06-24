@@ -2,5 +2,9 @@
 #define PINOUT_H
 
 // TODO
+#define SERVO_JAMBE_GAUCHE_PIN  18
+#define SERVO_JAMBE_DROITE_PIN 19
+#define SERVO_PIED_GAUCHE_PIN 21
+#define SERVO_PIED_DROIT_PIN 22
 
 #endif
