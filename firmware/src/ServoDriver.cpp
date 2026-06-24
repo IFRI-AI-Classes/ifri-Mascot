@@ -4,14 +4,15 @@
 #include <Arduino.h>
 
 
-#define PWM_FREQ 50
-#define PWM_RESOLUTION 10
+#define PWM_FREQ 50  // 50 hz
+#define PWM_RESOLUTION 10 // 10 bit
 #define PULSATION_MIN 1000 // 1ms pour 0degre
 #define PULSATION_MAX 2000 // 2ms pour 180
-#define PERIODE_DE_SIGNAL 20000 // 20ms
+#define PERIODE_DE_SIGNAL 20000 // 20ms periode du signal
 
 Servo servos[NB_SERVOS];
 
+// fonction pour convertir l'angle qu'on veut en signal comprehensible par le servo
 static int conversion(int angle){
 
     if (angle < 0) angle = 0;
@@ -59,6 +60,8 @@ void servoDriverInit() {
   ledcAttachPin(SERVO_PIED_DROIT_PIN, 3);
 }
 
+// Met à jour tous les servos
+//Cette fonction doit être appelée régulièrement pour que les mouvements s'exécutent. Idéalement dans loop().
 void servoDriverUpdate(){
     for (int i = 0; i < NB_SERVOS; i++) {
         int duty = conversion(servos[i].angleCible);
@@ -67,11 +70,13 @@ void servoDriverUpdate(){
     }
 }
 
+//Définit l'angle cible d'un servo
 int servoDriverGetAngle(unsigned int servoId) {
     if (servoId >= NB_SERVOS) return -1;
     return servos[servoId].angleActuel;
 }
 
+//Récupère l'angle actuel d'un servo
 void servoDriverSetAngle(unsigned int servoId, int angle){
     if (servoId >= NB_SERVOS) return;
     if (angle < 0) angle = 0;
