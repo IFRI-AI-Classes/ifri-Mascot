@@ -6,6 +6,7 @@ firmware/src/config/Secrets.h
 *.hex
 *.elf
 *.bin
+*.o
 firmware/build/
 
 # Build PlatformIO

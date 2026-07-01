@@ -12,10 +12,6 @@
 #include "src/AudioDriver.h"
 #include "src/WebServer.h"
 
-#ifndef WIFI_SSID
-#define WIFI_SSID "IFRI-Mascot"
-#endif
-
 void setup() {
   Serial.begin(115200);
   delay(500);
@@ -23,7 +19,6 @@ void setup() {
   Serial.println("  IFRI Mascot - Demarrage");
   Serial.println("=================================\n");
 
-  // Initialisation des modules (ordre important)
   Serial.println("[Setup] Initialisation ServoDriver...");
   servoDriverInit();
 
@@ -45,13 +40,11 @@ void setup() {
 }
 
 void loop() {
-  // Mise a jour non-bloquante de tous les modules.
   servoDriverUpdate();
   motionEngineUpdate();
   ultrasonicDriverUpdate();
   audioDriverUpdate();
   webServerUpdate();
 
-  // Petit delai pour laisser le CPU gerer le WiFi.
   delay(1);
 }

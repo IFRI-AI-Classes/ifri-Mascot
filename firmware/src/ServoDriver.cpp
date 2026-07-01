@@ -1,68 +1,72 @@
 #include "ServoDriver.h"
 
-// ======== SERVO OBJECTS ========
-Servo servoArray[SERVO_COUNT];
-uint8_t currentAngles[SERVO_COUNT];
-uint8_t targetAngles[SERVO_COUNT];
+static Servo servoArray[SERVO_COUNT];
+static uint8_t currentAngles[SERVO_COUNT];
+static uint8_t targetAngles[SERVO_COUNT];
 
-// Pin mapping pour les servos
-const uint8_t servoPins[SERVO_COUNT] = {
+static const uint8_t servoPins[SERVO_COUNT] = {
   SERVO_LEFT_LEG_PIN,
   SERVO_RIGHT_LEG_PIN,
   SERVO_LEFT_FOOT_PIN,
   SERVO_RIGHT_FOOT_PIN
 };
 
-// ======== INITIALIZATION ========
+static uint8_t clampServoAngle(int angle) {
+  if (angle < SERVO_MIN_ANGLE) return SERVO_MIN_ANGLE;
+  if (angle > SERVO_MAX_ANGLE) return SERVO_MAX_ANGLE;
+  return static_cast<uint8_t>(angle);
+}
 
 void servoDriverInit() {
   Serial.println("[ServoDriver] Initialisation des servos...");
-  
-  // Initialiser chaque servo
-  for (int i = 0; i < SERVO_COUNT; i++) {
-    servoArray[i].attach(servoPins[i]);
+
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    servoArray[i].setPeriodHertz(50);
+    servoArray[i].attach(servoPins[i], 500, 2500);
     currentAngles[i] = SERVO_CENTER;
     targetAngles[i] = SERVO_CENTER;
     servoArray[i].write(SERVO_CENTER);
-    
+
     Serial.print("[ServoDriver] Servo ");
     Serial.print(i);
-    Serial.print(" attaché au pin ");
+    Serial.print(" attache au pin ");
     Serial.println(servoPins[i]);
   }
-  
-  delay(500); // Laisser les servos se stabiliser
-  Serial.println("[ServoDriver] Initialisation complète!");
+
+  delay(500);
+  Serial.println("[ServoDriver] Initialisation complete");
 }
 
 void servoDriverUpdate() {
-  // Cette fonction est appelée en boucle pour appliquer les changements progressifs
-  for (int i = 0; i < SERVO_COUNT; i++) {
-    if (currentAngles[i] != targetAngles[i]) {
-      // Mouvement progressif (vitesse contrôlée)
-      if (currentAngles[i] < targetAngles[i]) {
-        currentAngles[i]++;
-      } else {
-        currentAngles[i]--;
-      }
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    if (currentAngles[i] < targetAngles[i]) {
+      currentAngles[i]++;
+      servoArray[i].write(currentAngles[i]);
+    } else if (currentAngles[i] > targetAngles[i]) {
+      currentAngles[i]--;
       servoArray[i].write(currentAngles[i]);
     }
   }
 }
 
-// ======== SERVO CONTROL ========
+void servoDriverSetAngle(unsigned int servoId, int angle) {
+  servoSetAngle(static_cast<uint8_t>(servoId), clampServoAngle(angle));
+}
+
+int servoDriverGetAngle(unsigned int servoId) {
+  if (servoId >= SERVO_COUNT) {
+    return -1;
+  }
+  return servoGetAngle(static_cast<uint8_t>(servoId));
+}
 
 void servoSetAngle(uint8_t servoIndex, uint8_t angle) {
   if (servoIndex >= SERVO_COUNT) {
-    Serial.println("[ServoDriver] Erreur: Index servo invalide!");
+    Serial.println("[ServoDriver] Erreur: index servo invalide");
     return;
   }
-  
-  // Limiter l'angle entre min et max
-  if (angle < SERVO_MIN_ANGLE) angle = SERVO_MIN_ANGLE;
-  if (angle > SERVO_MAX_ANGLE) angle = SERVO_MAX_ANGLE;
-  
-  targetAngles[servoIndex] = angle;
+
+  targetAngles[servoIndex] = clampServoAngle(angle);
 }
 
 uint8_t servoGetAngle(uint8_t servoIndex) {
@@ -73,21 +77,24 @@ uint8_t servoGetAngle(uint8_t servoIndex) {
 }
 
 void servoSetNeutralPosition() {
-  for (int i = 0; i < SERVO_COUNT; i++) {
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
     servoSetAngle(i, SERVO_CENTER);
   }
 }
 
 void servoDisableAll() {
-  for (int i = 0; i < SERVO_COUNT; i++) {
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
     servoArray[i].detach();
   }
-  Serial.println("[ServoDriver] Tous les servos sont désactivés");
+  Serial.println("[ServoDriver] Tous les servos sont desactives");
 }
 
 void servoEnableAll() {
-  for (int i = 0; i < SERVO_COUNT; i++) {
-    servoArray[i].attach(servoPins[i]);
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    if (!servoArray[i].attached()) {
+      servoArray[i].attach(servoPins[i], 500, 2500);
+      servoArray[i].write(currentAngles[i]);
+    }
   }
-  Serial.println("[ServoDriver] Tous les servos sont activés");
+  Serial.println("[ServoDriver] Tous les servos sont actives");
 }
