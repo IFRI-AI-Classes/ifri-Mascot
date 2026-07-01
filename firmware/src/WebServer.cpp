@@ -102,6 +102,7 @@ void webServerInit() {
     }
     Serial.println("[WebServer] SPIFFS monte avec succes");
 
+    WiFi.setSleep(false);
     WiFi.softAP(WIFI_SSID, WIFI_PASSWORD, WIFI_CHANNEL, 0, WIFI_MAX_CLIENTS);
     wifi_config_t apConfig;
     if (esp_wifi_get_config(WIFI_IF_AP, &apConfig) == ESP_OK) {

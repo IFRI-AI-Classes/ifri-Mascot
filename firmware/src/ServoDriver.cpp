@@ -40,10 +40,12 @@ void servoDriverInit() {
 void servoDriverUpdate() {
   for (uint8_t i = 0; i < SERVO_COUNT; i++) {
     if (currentAngles[i] < targetAngles[i]) {
-      currentAngles[i]++;
+      uint8_t delta = targetAngles[i] - currentAngles[i];
+      currentAngles[i] += min<uint8_t>(SERVO_STEP_DEGREES, delta);
       servoArray[i].write(currentAngles[i]);
     } else if (currentAngles[i] > targetAngles[i]) {
-      currentAngles[i]--;
+      uint8_t delta = currentAngles[i] - targetAngles[i];
+      currentAngles[i] -= min<uint8_t>(SERVO_STEP_DEGREES, delta);
       servoArray[i].write(currentAngles[i]);
     }
   }

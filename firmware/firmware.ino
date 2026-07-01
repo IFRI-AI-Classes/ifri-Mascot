@@ -51,5 +51,5 @@ void loop() {
   batteryDriverUpdate();
   webServerUpdate();
 
-  delay(1);
+  yield();
 }

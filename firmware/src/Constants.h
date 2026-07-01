@@ -27,7 +27,7 @@
 #endif
 
 #ifndef STATS_INTERVAL_MS
-#define STATS_INTERVAL_MS 1000
+#define STATS_INTERVAL_MS 500
 #endif
 
 #ifndef AUDIO_VOLUME_MAX
@@ -38,6 +38,7 @@
 #define SERVO_MIN_ANGLE     0      // Angle minimum (degrés)
 #define SERVO_MAX_ANGLE     180    // Angle maximum (degrés)
 #define SERVO_CENTER        90     // Position centrale (neutrale)
+#define SERVO_STEP_DEGREES  4
 
 // ======== WALKING GAIT PARAMETERS ========
 // Angles pour la marche bipède (en degrés, relatif au centre)
@@ -62,9 +63,9 @@
 #define WALK_PHASE_COUNT        4     // Nombre de phases dans le cycle de marche
 
 // Vitesse de marche (délai entre chaque étape)
-#define WALK_SPEED_SLOW         800   // Marche lente
-#define WALK_SPEED_NORMAL       500   // Marche normale
-#define WALK_SPEED_FAST         250   // Marche rapide
+#define WALK_SPEED_SLOW         420   // Marche lente
+#define WALK_SPEED_NORMAL       220   // Marche normale
+#define WALK_SPEED_FAST         140   // Marche rapide
 
 // ======== ROLLING PARAMETERS ========
 // Roulis : Le robot bascule sur les côtés pour progresser
