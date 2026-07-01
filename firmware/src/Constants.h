@@ -40,6 +40,17 @@
 #define SERVO_CENTER        90     // Position centrale (neutrale)
 #define SERVO_STEP_DEGREES  4
 
+// ======== WHEEL DRIVE ========
+#define WHEEL_SERVO_STOP          90
+#define WHEEL_SERVO_FORWARD       125
+#define WHEEL_SERVO_BACKWARD      55
+#define WHEEL_SERVO_TURN_FAST     125
+#define WHEEL_SERVO_TURN_SLOW     90
+#define SUPPORT_LEFT_REST_ANGLE   90
+#define SUPPORT_RIGHT_REST_ANGLE  90
+#define SUPPORT_LEFT_DRIVE_ANGLE  35
+#define SUPPORT_RIGHT_DRIVE_ANGLE 145
+
 // ======== WALKING GAIT PARAMETERS ========
 // Angles pour la marche bipède (en degrés, relatif au centre)
 

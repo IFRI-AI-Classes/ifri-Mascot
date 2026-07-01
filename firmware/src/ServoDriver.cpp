@@ -71,6 +71,18 @@ void servoSetAngle(uint8_t servoIndex, uint8_t angle) {
   targetAngles[servoIndex] = clampServoAngle(angle);
 }
 
+void servoSetAngleImmediate(uint8_t servoIndex, uint8_t angle) {
+  if (servoIndex >= SERVO_COUNT) {
+    Serial.println("[ServoDriver] Erreur: index servo invalide");
+    return;
+  }
+
+  uint8_t clampedAngle = clampServoAngle(angle);
+  currentAngles[servoIndex] = clampedAngle;
+  targetAngles[servoIndex] = clampedAngle;
+  servoArray[servoIndex].write(clampedAngle);
+}
+
 uint8_t servoGetAngle(uint8_t servoIndex) {
   if (servoIndex >= SERVO_COUNT) {
     return 0;

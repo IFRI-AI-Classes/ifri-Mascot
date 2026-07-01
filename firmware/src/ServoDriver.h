@@ -16,6 +16,11 @@ enum ServoIndex {
   SERVO_RIGHT_FOOT = 3
 };
 
+#define SERVO_LEFT_WHEEL    SERVO_LEFT_LEG
+#define SERVO_RIGHT_WHEEL   SERVO_RIGHT_LEG
+#define SERVO_LEFT_SUPPORT  SERVO_LEFT_FOOT
+#define SERVO_RIGHT_SUPPORT SERVO_RIGHT_FOOT
+
 void servoDriverInit();
 void servoDriverUpdate();
 
@@ -23,6 +28,7 @@ void servoDriverSetAngle(unsigned int servoId, int angle);
 int servoDriverGetAngle(unsigned int servoId);
 
 void servoSetAngle(uint8_t servoIndex, uint8_t angle);
+void servoSetAngleImmediate(uint8_t servoIndex, uint8_t angle);
 uint8_t servoGetAngle(uint8_t servoIndex);
 
 void servoSetNeutralPosition();
