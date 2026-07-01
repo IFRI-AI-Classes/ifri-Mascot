@@ -8,6 +8,11 @@ firmware/src/config/Secrets.h
 *.bin
 firmware/build/
 
+# Build PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
 # IDE
 .vscode/
 .idea/

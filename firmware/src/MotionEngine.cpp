@@ -11,7 +11,6 @@ bool isMoving = false;
 
 void motionEngineInit() {
   Serial.println("[MotionEngine] Initialisation du moteur de mouvement...");
-  servoDriverInit();
   motionStop();
   Serial.println("[MotionEngine] Prêt!");
 }
@@ -33,8 +32,6 @@ void motionEngineUpdate() {
     executeGaitPhase();
   }
   
-  // Mettre à jour les servos (mouvement progressif)
-  servoDriverUpdate();
 }
 
 // ======== MOTION CONTROL ========

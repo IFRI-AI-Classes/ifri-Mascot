@@ -1,11 +1,521 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>IFRI Mascot</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <style>
+    /* ========== RESET & BASE ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a1a;
+      --panel: rgba(15, 20, 45, 0.85);
+      --neon-blue: #00d4ff;
+      --neon-purple: #b829dd;
+      --neon-green: #00ff88;
+      --neon-yellow: #ffcc00;
+      --neon-red: #ff3366;
+      --text: #e0e0ff;
+      --text-dim: #8899aa;
+      --border: rgba(0, 212, 255, 0.25);
+    }
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ========== FORCER PAYSAGE ========== */
+    .landscape-warning {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .landscape-warning svg { width: 80px; height: 80px; margin-bottom: 1.5rem; }
+    .landscape-warning h2 { color: var(--neon-blue); font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .landscape-warning p { color: var(--text-dim); font-size: 1rem; }
+    @media screen and (orientation: portrait) and (max-width: 900px) {
+      .landscape-warning { display: flex; }
+      .app-container { display: none !important; }
+    }
+
+    /* ========== APP CONTAINER ========== */
+    .app-container {
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      padding: 0.6rem 1rem;
+      gap: 0.5rem;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.3rem 0.8rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .header-icon { width: 22px; height: 22px; }
+    .battery-level, .wifi-status { font-size: 0.85rem; font-weight: 600; color: var(--neon-green); }
+    .wifi-status { color: var(--neon-blue); }
+    .header-title {
+      font-size: 1.1rem; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .settings-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 0.3rem; border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .settings-btn:hover { background: rgba(255,255,255,0.1); }
+    .settings-btn svg { width: 22px; height: 22px; stroke: var(--text); }
+
+    /* ========== MAIN GRID ========== */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1fr;
+      gap: 0.6rem;
+      min-height: 0;
+    }
+
+    /* ========== PANELS ========== */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.7rem;
+      backdrop-filter: blur(10px);
+      display: flex; flex-direction: column;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+    .panel-title {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      text-align: center;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-blue .panel-title { color: var(--neon-blue); }
+    .panel-purple .panel-title { color: var(--neon-purple); }
+    .panel-green .panel-title { color: var(--neon-green); }
+
+    /* ========== DEPLACEMENT (PAD) ========== */
+    .dpad {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      gap: 0.4rem;
+      place-items: center;
+    }
+    .dpad-btn {
+      width: 100%; height: 100%;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      touch-action: manipulation;
+    }
+    .dpad-btn:active, .dpad-btn.active {
+      background: rgba(0, 212, 255, 0.25);
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+    }
+    .dpad-btn svg { width: 28px; height: 28px; fill: var(--neon-blue); }
+    .dpad-center {
+      background: rgba(0, 212, 255, 0.15);
+      border-color: var(--neon-blue);
+    }
+    .dpad-center svg { fill: var(--text); width: 20px; height: 20px; }
+
+    /* ========== CENTER PANEL ========== */
+    .center-top {
+      flex: 1.2;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .robot-ring {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      animation: pulse-ring 3s ease-in-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(0, 212, 255, 0.4); }
+    }
+    .robot-icon { width: 80px; height: 80px; }
+
+    .center-stats {
+      flex: 1;
+      display: flex; flex-direction: column;
+      gap: 0.35rem;
+      justify-content: center;
+    }
+    .stat-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+    }
+    .stat-icon { width: 18px; height: 18px; flex-shrink: 0; }
+    .stat-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
+    .stat-value { margin-left: auto; font-size: 0.85rem; font-weight: 700; }
+    .stat-bar {
+      width: 60px; height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px; overflow: hidden;
+      margin-left: 0.3rem;
+    }
+    .stat-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      transition: width 0.3s;
+    }
+
+    /* ========== ACTIONS SPECIALES ========== */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+    }
+    .action-btn {
+      aspect-ratio: 1;
+      background: rgba(184, 41, 221, 0.08);
+      border: 1px solid rgba(184, 41, 221, 0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s;
+      touch-action: manipulation;
+    }
+    .action-btn:active, .action-btn.active {
+      background: rgba(184, 41, 221, 0.25);
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 12px rgba(184, 41, 221, 0.3);
+    }
+    .action-btn svg { width: 22px; height: 22px; fill: var(--neon-purple); }
+    .action-btn.yellow { background: rgba(255, 204, 0, 0.08); border-color: rgba(255, 204, 0, 0.3); }
+    .action-btn.yellow svg { fill: var(--neon-yellow); }
+    .action-btn.yellow:active, .action-btn.yellow.active {
+      background: rgba(255, 204, 0, 0.25); border-color: var(--neon-yellow);
+      box-shadow: 0 0 12px rgba(255, 204, 0, 0.3);
+    }
+
+    /* ========== SECURITE / AUTONOMIE ========== */
+    .sec-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+    }
+    .sec-btn {
+      aspect-ratio: 1;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s;
+      touch-action: manipulation;
+    }
+    .sec-btn:active, .sec-btn.active {
+      background: rgba(0, 255, 136, 0.25);
+      border-color: var(--neon-green);
+      box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
+    }
+    .sec-btn svg { width: 24px; height: 24px; fill: var(--neon-green); }
+    .sec-btn.warn { background: rgba(255, 204, 0, 0.08); border-color: rgba(255, 204, 0, 0.3); }
+    .sec-btn.warn svg { fill: var(--neon-yellow); }
+    .sec-btn.warn:active, .sec-btn.warn.active {
+      background: rgba(255, 204, 0, 0.25); border-color: var(--neon-yellow);
+      box-shadow: 0 0 12px rgba(255, 204, 0, 0.3);
+    }
+
+    /* ========== AUDIO ========== */
+    .audio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+    }
+    .audio-btn {
+      aspect-ratio: 1;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s;
+      touch-action: manipulation;
+    }
+    .audio-btn:active, .audio-btn.active {
+      background: rgba(0, 212, 255, 0.25);
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+    }
+    .audio-btn svg { width: 22px; height: 22px; fill: var(--neon-blue); }
+    .audio-btn.mute { background: rgba(255, 51, 102, 0.08); border-color: rgba(255, 51, 102, 0.3); }
+    .audio-btn.mute svg { fill: var(--neon-red); }
+    .audio-btn.mute:active, .audio-btn.mute.active {
+      background: rgba(255, 51, 102, 0.25); border-color: var(--neon-red);
+      box-shadow: 0 0 12px rgba(255, 51, 102, 0.3);
+    }
+
+    /* ========== TOAST NOTIFICATION ========== */
+    .toast {
+      position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--panel); border: 1px solid var(--border);
+      padding: 0.6rem 1.2rem; border-radius: 10px;
+      font-size: 0.85rem; color: var(--text);
+      opacity: 0; transition: all 0.3s;
+      z-index: 1000; pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ========== CONNECTION STATUS ========== */
+    .conn-status {
+      position: fixed; top: 0.5rem; right: 0.5rem;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green);
+      z-index: 1000;
+    }
+    .conn-status.offline { background: var(--neon-red); box-shadow: 0 0 8px var(--neon-red); }
+  </style>
+<base target="_blank">
 </head>
 <body>
-  <h1>IFRI Mascot</h1>
+
+  <!-- FORCER PAYSAGE -->
+  <div class="landscape-warning">
+    <svg viewBox="0 0 100 100"><rect x="10" y="25" width="80" height="50" rx="5" fill="none" stroke="#00d4ff" stroke-width="3"/><path d="M35 45 L50 55 L65 45" fill="none" stroke="#00d4ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="50" r="30" fill="none" stroke="#b829dd" stroke-width="1.5" opacity="0.3"/></svg>
+    <h2>Passez en mode paysage</h2>
+    <p>Veuillez tourner votre téléphone pour utiliser l'application.</p>
+  </div>
+
+  <!-- APP -->
+  <div class="app-container">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/></svg>
+        <span class="battery-level" id="battery">78%</span>
+        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        <span class="wifi-status" id="wifi">ON</span>
+      </div>
+      <div class="header-title">Robot Mascotte</div>
+      <button class="settings-btn" onclick="showToast('Paramètres - à implémenter')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+      <!-- PANEL GAUCHE: DEPLACEMENT -->
+      <div class="panel panel-blue">
+        <div class="panel-title">Déplacement</div>
+        <div class="dpad">
+          <div></div>
+          <button class="dpad-btn" data-cmd="forward" ontouchstart="sendCmd(this,'forward')" ontouchend="sendCmd(this,'stop')" onmousedown="sendCmd(this,'forward')" onmouseup="sendCmd(this,'stop')">
+            <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+          <div></div>
+          <button class="dpad-btn" data-cmd="left" ontouchstart="sendCmd(this,'left')" ontouchend="sendCmd(this,'stop')" onmousedown="sendCmd(this,'left')" onmouseup="sendCmd(this,'stop')">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <button class="dpad-btn dpad-center" data-cmd="stop" onclick="sendCmd(this,'stop')">
+            <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          </button>
+          <button class="dpad-btn" data-cmd="right" ontouchstart="sendCmd(this,'right')" ontouchend="sendCmd(this,'stop')" onmousedown="sendCmd(this,'right')" onmouseup="sendCmd(this,'stop')">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <div></div>
+          <button class="dpad-btn" data-cmd="backward" ontouchstart="sendCmd(this,'backward')" ontouchend="sendCmd(this,'stop')" onmousedown="sendCmd(this,'backward')" onmouseup="sendCmd(this,'stop')">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </button>
+          <div></div>
+        </div>
+      </div>
+
+      <!-- PANEL CENTRE: ROBOT + STATS -->
+      <div class="panel" style="padding:0.5rem;">
+        <div class="center-top">
+          <div class="robot-ring">
+            <svg class="robot-icon" viewBox="0 0 100 100">
+              <!-- Corps -->
+              <rect x="30" y="35" width="40" height="35" rx="10" fill="none" stroke="#00d4ff" stroke-width="2"/>
+              <!-- Tête -->
+              <rect x="32" y="15" width="36" height="22" rx="8" fill="none" stroke="#00d4ff" stroke-width="2"/>
+              <!-- Yeux -->
+              <circle cx="42" cy="26" r="4" fill="#00d4ff"/>
+              <circle cx="58" cy="26" r="4" fill="#00d4ff"/>
+              <!-- Antenne -->
+              <line x1="50" y1="15" x2="50" y2="5" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="50" cy="4" r="2.5" fill="#b829dd"/>
+              <!-- Bras -->
+              <path d="M30 45 L18 55 L18 68" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+              <path d="M70 45 L82 55 L82 68" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+              <!-- Jambes -->
+              <path d="M38 70 L38 85 L32 92" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+              <path d="M62 70 L62 85 L68 92" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+              <!-- Cœur / Core -->
+              <circle cx="50" cy="55" r="5" fill="#b829dd" opacity="0.8">
+                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+          </div>
+        </div>
+        <div class="center-stats">
+          <div class="stat-row">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <span class="stat-label">Distance</span>
+            <div class="stat-bar"><div class="stat-bar-fill" id="dist-bar" style="width:42%"></div></div>
+            <span class="stat-value" id="distance">42 cm</span>
+          </div>
+          <div class="stat-row">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/></svg>
+            <span class="stat-label">Batterie</span>
+            <div class="stat-bar"><div class="stat-bar-fill" id="batt-bar" style="width:78%;background:linear-gradient(90deg,#00ff88,#00d4ff)"></div></div>
+            <span class="stat-value" id="battery-stat">78%</span>
+          </div>
+          <div class="stat-row">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#b829dd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span class="stat-label">État</span>
+            <span class="stat-value" id="state" style="color:var(--neon-green)">Marche</span>
+          </div>
+          <div class="stat-row">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span class="stat-label">Vitesse</span>
+            <span class="stat-value" id="speed">Normal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL DROIT: ACTIONS + SECURITE + AUDIO -->
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <!-- ACTIONS SPECIALES -->
+        <div class="panel panel-purple" style="flex:1.2;">
+          <div class="panel-title">Actions Spéciales</div>
+          <div class="actions-grid">
+            <button class="action-btn" onclick="sendAction('music')">
+              <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </button>
+            <button class="action-btn" onclick="sendAction('wave')">
+              <svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="M6 12a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2"/><path d="M12 12a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2"/></svg>
+            </button>
+            <button class="action-btn" onclick="sendAction('sleep')">
+              <svg viewBox="0 0 24 24"><text x="6" y="18" fill="#b829dd" font-size="14" font-weight="bold" font-family="sans-serif">zZZ</text></svg>
+            </button>
+            <button class="action-btn yellow" onclick="sendAction('light')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- SECURITE / AUTONOMIE -->
+        <div class="panel panel-green" style="flex:1;">
+          <div class="panel-title">Sécurité / Autonomie</div>
+          <div class="sec-grid">
+            <button class="sec-btn" onclick="sendAction('auto')">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="6" fill="none" stroke="#00ff88" stroke-width="2"/><circle cx="9" cy="10" r="1.5" fill="#00ff88"/><circle cx="15" cy="10" r="1.5" fill="#00ff88"/><path d="M8 15c1.5 2 4.5 2 6 0" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <button class="sec-btn" onclick="sendAction('follow')">
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" fill="none" stroke="#00ff88" stroke-width="2"/></svg>
+            </button>
+            <button class="sec-btn warn" onclick="sendAction('avoid')">
+              <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="none" stroke="#ffcc00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="#ffcc00" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#ffcc00" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- AUDIO -->
+        <div class="panel panel-blue" style="flex:1;">
+          <div class="panel-title">Audio</div>
+          <div class="audio-grid">
+            <button class="audio-btn" onclick="sendAction('speak')">
+              <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="19" x2="12" y2="23" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="23" x2="16" y2="23" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <button class="audio-btn" onclick="sendAction('volume_up')">
+              <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#00d4ff"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <button class="audio-btn mute" onclick="sendAction('mute')">
+              <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ff3366"/><line x1="23" y1="9" x2="17" y2="15" stroke="#ff3366" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="9" x2="23" y2="15" stroke="#ff3366" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+  <div class="conn-status" id="conn"></div>
+
+  <script>
+    // ====== API ======
+    const API_BASE = window.location.origin;
+    let isOnline = true;
+
+    function sendCmd(btn, cmd) {
+      if(btn) btn.classList.toggle('active', cmd !== 'stop');
+      fetch(`${API_BASE}/api/move?cmd=${cmd}`).catch(()=>{});
+      if(cmd !== 'stop') showToast(cmd.toUpperCase());
+    }
+
+    function sendAction(action) {
+      fetch(`${API_BASE}/api/action?type=${action}`)
+        .then(r => r.json())
+        .then(d => showToast(d.msg || action))
+        .catch(() => showToast('Erreur réseau'));
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // ====== POLLING STATS ======
+    async function pollStats() {
+      try {
+        const r = await fetch(`${API_BASE}/api/status`);
+        const d = await r.json();
+        document.getElementById('distance').textContent = (d.distance || 0) + ' cm';
+        document.getElementById('dist-bar').style.width = Math.min((d.distance||0)/100*100,100) + '%';
+        document.getElementById('battery').textContent = (d.battery || 0) + '%';
+        document.getElementById('battery-stat').textContent = (d.battery || 0) + '%';
+        document.getElementById('batt-bar').style.width = (d.battery || 0) + '%';
+        document.getElementById('state').textContent = d.state || 'Marche';
+        document.getElementById('speed').textContent = d.speed || 'Normal';
+        isOnline = true;
+      } catch(e) { isOnline = false; }
+      document.getElementById('conn').classList.toggle('offline', !isOnline);
+    }
+    setInterval(pollStats, 1000);
+    pollStats();
+
+    // ====== SERVICE WORKER ======
+    if('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    }
+  </script>
 </body>
 </html>

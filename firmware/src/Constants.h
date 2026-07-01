@@ -1,6 +1,35 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+// ======== WIFI / WEB SERVER ========
+#ifndef WIFI_SSID
+#define WIFI_SSID "IFRI-Mascot"
+#endif
+
+#ifndef WIFI_PASSWORD
+#define WIFI_PASSWORD "ifri-mascot"
+#endif
+
+#ifndef WIFI_CHANNEL
+#define WIFI_CHANNEL 6
+#endif
+
+#ifndef WIFI_MAX_CLIENTS
+#define WIFI_MAX_CLIENTS 4
+#endif
+
+#ifndef WEB_SERVER_PORT
+#define WEB_SERVER_PORT 80
+#endif
+
+#ifndef STATS_INTERVAL_MS
+#define STATS_INTERVAL_MS 1000
+#endif
+
+#ifndef AUDIO_VOLUME_MAX
+#define AUDIO_VOLUME_MAX 100
+#endif
+
 // ======== SERVO RANGES ========
 #define SERVO_MIN_ANGLE     0      // Angle minimum (degrés)
 #define SERVO_MAX_ANGLE     180    // Angle maximum (degrés)
