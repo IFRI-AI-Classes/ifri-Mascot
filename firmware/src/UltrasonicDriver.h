@@ -3,5 +3,6 @@
 
 void ultrasonicDriverInit();
 void ultrasonicDriverUpdate();
+float ultrasonicDriverGetDistance();
 
 #endif
