@@ -1,7 +1,8 @@
 const CACHE_NAME = 'ifri-mascot-v1';
 const URLS_TO_CACHE = [
   '/',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon.svg'
 ];
 
 self.addEventListener('install', event => {
