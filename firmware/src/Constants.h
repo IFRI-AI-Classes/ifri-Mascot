@@ -74,6 +74,13 @@
 #define OBSTACLE_DISTANCE_MIN   20    // Distance minimale avant obstacle (cm)
 #define OBSTACLE_DISTANCE_STOP  10    // Distance d'arrêt d'urgence (cm)
 
+// ======== ULTRASONIC HC-SR04 ========
+#define ULTRASONIC_PERIOD_MS       60
+#define ULTRASONIC_TIMEOUT_US      30000UL
+#define ULTRASONIC_MIN_DISTANCE_CM 2.0f
+#define ULTRASONIC_MAX_DISTANCE_CM 400.0f
+#define ULTRASONIC_SAMPLE_COUNT    5
+
 // ======== BATTERY ========
 #define BATTERY_MIN_VOLTAGE      3.0f  // 0% pour Li-Po 1S
 #define BATTERY_LOW_VOLTAGE      3.3f  // Alerte faible

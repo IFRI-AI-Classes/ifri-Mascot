@@ -5,6 +5,7 @@
 #include "Constants.h"
 #include "Pinout.h"
 #include "BatteryDriver.h"
+#include "UltrasonicDriver.h"
 
 // Declarations externes des autres modules
 extern void servoDriverInit();
@@ -20,7 +21,6 @@ static AsyncWebServer server(WEB_SERVER_PORT);
 
 static String currentState = "Marche";
 static String currentSpeed = "Normal";
-static float currentDistance = 42.0f;
 static bool isMuted = false;
 static int audioVolume = 50;
 static String currentMoveCmd = "stop";
@@ -103,7 +103,9 @@ void webServerInit() {
 
     server.on("/api/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
-        json += "\"distance\":" + String(currentDistance, 1) + ",";
+        json += "\"distance\":" + String(ultrasonicDriverGetDistanceCm(), 1) + ",";
+        json += "\"distanceValid\":" + String(ultrasonicDriverHasValidMeasure() ? "true" : "false") + ",";
+        json += "\"obstacle\":" + String(ultrasonicDriverIsObstacleDetected() ? "true" : "false") + ",";
         json += "\"battery\":" + String(batteryGetPercent()) + ",";
         json += "\"batteryVoltage\":" + String(batteryGetVoltage(), 2) + ",";
         json += "\"batteryLow\":" + String(batteryIsLow() ? "true" : "false") + ",";
