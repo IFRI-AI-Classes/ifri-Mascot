@@ -8,6 +8,7 @@
 #include "BatteryDriver.h"
 #include "BatterySafety.h"
 #include "UltrasonicDriver.h"
+#include "ObstacleAvoidance.h"
 #include "MotionEngine.h"
 
 static AsyncWebServer server(WEB_SERVER_PORT);
@@ -87,6 +88,7 @@ static bool applyMoveCommand(const String& cmd) {
     } else if (cmd == "right") {
         motionStart(MOTION_TURN_RIGHT, speed);
     } else if (cmd == "stop") {
+        obstacleAvoidanceCancel();
         motionStop();
     } else {
         return false;
@@ -187,8 +189,10 @@ void webServerInit() {
             msg = "Mode suivi";
             currentState = "Suivi";
         } else if (type == "avoid") {
-            msg = "Evitement obstacles";
-            currentState = "Evitement";
+            bool enabled = !obstacleAvoidanceIsEnabled();
+            obstacleAvoidanceSetEnabled(enabled);
+            msg = enabled ? "Evitement active" : "Evitement desactive";
+            currentState = enabled ? "Evitement" : motionModeToString(motionGetCurrentMode());
         } else if (type == "speak") {
             msg = "Parle...";
         } else if (type == "volume_up") {
@@ -219,6 +223,9 @@ void webServerInit() {
         json += "\"distance\":" + String(ultrasonicDriverGetDistanceCm(), 1) + ",";
         json += "\"distanceValid\":" + String(ultrasonicDriverHasValidMeasure() ? "true" : "false") + ",";
         json += "\"obstacle\":" + String(ultrasonicDriverIsObstacleDetected() ? "true" : "false") + ",";
+        json += "\"obstacleAvoidance\":" + String(obstacleAvoidanceIsEnabled() ? "true" : "false") + ",";
+        json += "\"obstacleAvoidanceActive\":" + String(obstacleAvoidanceIsActive() ? "true" : "false") + ",";
+        json += "\"obstacleAvoidanceState\":\"" + String(obstacleAvoidanceGetState()) + "\",";
         json += "\"battery\":" + String(batteryGetPercent()) + ",";
         json += "\"batteryVoltage\":" + String(batteryGetVoltage(), 2) + ",";
         json += "\"batteryLow\":" + String(batteryIsLow() ? "true" : "false") + ",";

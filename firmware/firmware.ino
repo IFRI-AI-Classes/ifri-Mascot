@@ -12,6 +12,7 @@
 #include "src/AudioDriver.h"
 #include "src/BatteryDriver.h"
 #include "src/BatterySafety.h"
+#include "src/ObstacleAvoidance.h"
 #include "src/WebServer.h"
 
 void setup() {
@@ -36,6 +37,9 @@ void setup() {
   Serial.println("[Setup] Initialisation BatteryDriver...");
   batteryDriverInit();
 
+  Serial.println("[Setup] Initialisation ObstacleAvoidance...");
+  obstacleAvoidanceInit();
+
   Serial.println("[Setup] Initialisation WebServer...");
   webServerInit();
 
@@ -48,6 +52,7 @@ void loop() {
   servoDriverUpdate();
   motionEngineUpdate();
   ultrasonicDriverUpdate();
+  obstacleAvoidanceUpdate();
   audioDriverUpdate();
   batteryDriverUpdate();
   batterySafetyUpdate();

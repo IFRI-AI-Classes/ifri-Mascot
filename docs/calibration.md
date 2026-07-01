@@ -90,6 +90,7 @@ Seuils:
 ```cpp
 #define OBSTACLE_DISTANCE_MIN  20
 #define OBSTACLE_DISTANCE_STOP 10
+#define OBSTACLE_AVOID_TRIGGER_CM 15
 ```
 
 Procedure:
@@ -98,6 +99,13 @@ Procedure:
 2. Placer un obstacle a 20 cm, verifier `obstacle`.
 3. Placer un obstacle a 10 cm, verifier la zone d'arret.
 4. Si la mesure saute, verifier l'alimentation et le diviseur sur `ECHO`.
+
+Evitement:
+
+- le declenchement automatique commence a `OBSTACLE_AVOID_TRIGGER_CM`;
+- la sequence actuelle est: stop, recul, rotation, recuperation;
+- un appui manuel sur `stop` annule la sequence en cours;
+- le son obstacle sera branche quand `AudioDriver` sera finalise.
 
 ## Calibration batterie
 

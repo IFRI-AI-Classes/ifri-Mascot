@@ -78,6 +78,11 @@
 // ======== OBSTACLE AVOIDANCE ========
 #define OBSTACLE_DISTANCE_MIN   20    // Distance minimale avant obstacle (cm)
 #define OBSTACLE_DISTANCE_STOP  10    // Distance d'arrêt d'urgence (cm)
+#define OBSTACLE_AVOID_TRIGGER_CM 15
+#define OBSTACLE_BACKUP_MS        650
+#define OBSTACLE_TURN_MS          750
+#define OBSTACLE_RECOVERY_MS      250
+#define OBSTACLE_AVOID_SPEED      WALK_SPEED_SLOW
 
 // ======== ULTRASONIC HC-SR04 ========
 #define ULTRASONIC_PERIOD_MS       60

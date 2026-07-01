@@ -55,6 +55,13 @@ doivent etre transformees en etats mis a jour par `millis()`.
 - applique un timeout;
 - expose la distance, la validite de mesure et l'etat obstacle.
 
+`ObstacleAvoidance`
+
+- surveille la distance HC-SR04;
+- si le robot est en mouvement et qu'un obstacle est trop proche, arrete le mouvement;
+- execute une sequence non bloquante: stop, recul, rotation, recuperation;
+- prepare le point d'integration du futur son obstacle.
+
 `BatteryDriver`
 
 - lit l'ADC batterie;
@@ -142,6 +149,9 @@ Retourne notamment:
 - `distance`
 - `distanceValid`
 - `obstacle`
+- `obstacleAvoidance`
+- `obstacleAvoidanceActive`
+- `obstacleAvoidanceState`
 - `battery`
 - `batteryVoltage`
 - `batteryLow`
