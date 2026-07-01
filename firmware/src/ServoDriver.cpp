@@ -1,74 +1,100 @@
 #include "ServoDriver.h"
-#include "Pinout.h"
-#include <Arduino.h>
 
-#define PWM_FREQ 50 // 50 hz
-#define PWM_RESOLUTION 10 // 10 bits
+static Servo servoArray[SERVO_COUNT];
+static uint8_t currentAngles[SERVO_COUNT];
+static uint8_t targetAngles[SERVO_COUNT];
 
-#define PULSATION_MIN 500 // 5 ms pour 0 degre
-#define PULSATION_MAX 2500 // 2,5 ms pour 180
-#define PERIODE_DE_SIGNAL 20000 // 20ms periode du signal
+static const uint8_t servoPins[SERVO_COUNT] = {
+  SERVO_LEFT_LEG_PIN,
+  SERVO_RIGHT_LEG_PIN,
+  SERVO_LEFT_FOOT_PIN,
+  SERVO_RIGHT_FOOT_PIN
+};
 
-Servo servos[NB_SERVOS];
-
-// fonction pour convertir l'angle qu'on veut en signal comprehensible par le servo
-static int conversion(int angle){
-    if (angle < 0) angle = 0;
-    if (angle > 180) angle = 180;
-
-    float pulse = PULSATION_MIN + (angle / 180.0f) * (PULSATION_MAX - PULSATION_MIN);
-    int maxDuty = (1 << PWM_RESOLUTION) - 1;
-    return (pulse / PERIODE_DE_SIGNAL) * maxDuty;
+static uint8_t clampServoAngle(int angle) {
+  if (angle < SERVO_MIN_ANGLE) return SERVO_MIN_ANGLE;
+  if (angle > SERVO_MAX_ANGLE) return SERVO_MAX_ANGLE;
+  return static_cast<uint8_t>(angle);
 }
 
-void servoDriverInit(){
+void servoDriverInit() {
+  Serial.println("[ServoDriver] Initialisation des servos...");
 
-    // innitialisation des servos
-    servos[0].gpio = SERVO_JAMBE_GAUCHE_PIN;
-    servos[0].angleActuel = 90;
-    servos[0].angleCible = 90;
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    servoArray[i].setPeriodHertz(50);
+    servoArray[i].attach(servoPins[i], 500, 2500);
+    currentAngles[i] = SERVO_CENTER;
+    targetAngles[i] = SERVO_CENTER;
+    servoArray[i].write(SERVO_CENTER);
 
-    servos[1].gpio = SERVO_JAMBE_DROITE_PIN;
-    servos[1].angleActuel = 90;
-    servos[1].angleCible = 90;
+    Serial.print("[ServoDriver] Servo ");
+    Serial.print(i);
+    Serial.print(" attache au pin ");
+    Serial.println(servoPins[i]);
+  }
 
-    servos[2].gpio = SERVO_PIED_GAUCHE_PIN;
-    servos[2].angleActuel = 90;
-    servos[2].angleCible = 90;
-
-    servos[3].gpio = SERVO_PIED_DROIT_PIN;
-    servos[3].angleActuel = 90;
-    servos[3].angleCible = 90;
-
-    //configuration des servos
-    ledcAttach(SERVO_JAMBE_GAUCHE_PIN, PWM_FREQ, PWM_RESOLUTION);
-    ledcAttach(SERVO_JAMBE_DROITE_PIN, PWM_FREQ, PWM_RESOLUTION);
-    ledcAttach(SERVO_PIED_GAUCHE_PIN, PWM_FREQ, PWM_RESOLUTION);
-    ledcAttach(SERVO_PIED_DROIT_PIN, PWM_FREQ, PWM_RESOLUTION);
-
-    servoDriverUpdate();
+  delay(500);
+  Serial.println("[ServoDriver] Initialisation complete");
 }
 
-// Met à jour tous les servos
-//Cette fonction doit être appelée régulièrement pour que les mouvements s'exécutent. Idéalement dans loop().
-void servoDriverUpdate(){
-    for (int i = 0; i < NB_SERVOS; i++){
-        int duty = conversion(servos[i].angleCible);
-        ledcWrite(servos[i].gpio, duty);
-        servos[i].angleActuel = servos[i].angleCible;
+void servoDriverUpdate() {
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    if (currentAngles[i] < targetAngles[i]) {
+      currentAngles[i]++;
+      servoArray[i].write(currentAngles[i]);
+    } else if (currentAngles[i] > targetAngles[i]) {
+      currentAngles[i]--;
+      servoArray[i].write(currentAngles[i]);
     }
+  }
 }
 
-//Définit l'angle cible d'un servo
-int servoDriverGetAngle(unsigned int servoId){
-    if (servoId >= NB_SERVOS) return -1;
-    return servos[servoId].angleActuel;
+void servoDriverSetAngle(unsigned int servoId, int angle) {
+  servoSetAngle(static_cast<uint8_t>(servoId), clampServoAngle(angle));
 }
 
-//Récupère l'angle actuel d'un servo
-void servoDriverSetAngle(unsigned int servoId, int angle){
-    if (servoId >= NB_SERVOS) return;
-    if (angle < 0) angle = 0;
-    if (angle > 180) angle = 180;
-    servos[servoId].angleCible = angle;
+int servoDriverGetAngle(unsigned int servoId) {
+  if (servoId >= SERVO_COUNT) {
+    return -1;
+  }
+  return servoGetAngle(static_cast<uint8_t>(servoId));
+}
+
+void servoSetAngle(uint8_t servoIndex, uint8_t angle) {
+  if (servoIndex >= SERVO_COUNT) {
+    Serial.println("[ServoDriver] Erreur: index servo invalide");
+    return;
+  }
+
+  targetAngles[servoIndex] = clampServoAngle(angle);
+}
+
+uint8_t servoGetAngle(uint8_t servoIndex) {
+  if (servoIndex >= SERVO_COUNT) {
+    return 0;
+  }
+  return currentAngles[servoIndex];
+}
+
+void servoSetNeutralPosition() {
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    servoSetAngle(i, SERVO_CENTER);
+  }
+}
+
+void servoDisableAll() {
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    servoArray[i].detach();
+  }
+  Serial.println("[ServoDriver] Tous les servos sont desactives");
+}
+
+void servoEnableAll() {
+  for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+    if (!servoArray[i].attached()) {
+      servoArray[i].attach(servoPins[i], 500, 2500);
+      servoArray[i].write(currentAngles[i]);
+    }
+  }
+  Serial.println("[ServoDriver] Tous les servos sont actives");
 }

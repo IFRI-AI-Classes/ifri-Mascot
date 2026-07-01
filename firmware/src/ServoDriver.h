@@ -1,19 +1,32 @@
 #ifndef SERVO_DRIVER_H
 #define SERVO_DRIVER_H
 
-#define NB_SERVOS 4
+#include <Arduino.h>
+#include <ESP32Servo.h>
+#include "Pinout.h"
+#include "Constants.h"
 
+#define SERVO_COUNT 4
+#define NB_SERVOS SERVO_COUNT
 
-//strcture pour pouvoir creer des objets servos plus tard
-struct Servo {
-    unsigned int gpio;
-    int angleActuel;
-    int angleCible;
+enum ServoIndex {
+  SERVO_LEFT_LEG = 0,
+  SERVO_RIGHT_LEG = 1,
+  SERVO_LEFT_FOOT = 2,
+  SERVO_RIGHT_FOOT = 3
 };
 
 void servoDriverInit();
 void servoDriverUpdate();
-int servoDriverGetAngle(unsigned int servoId);
+
 void servoDriverSetAngle(unsigned int servoId, int angle);
+int servoDriverGetAngle(unsigned int servoId);
+
+void servoSetAngle(uint8_t servoIndex, uint8_t angle);
+uint8_t servoGetAngle(uint8_t servoIndex);
+
+void servoSetNeutralPosition();
+void servoDisableAll();
+void servoEnableAll();
 
 #endif

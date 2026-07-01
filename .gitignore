@@ -6,7 +6,13 @@ firmware/src/config/Secrets.h
 *.hex
 *.elf
 *.bin
+*.o
 firmware/build/
+
+# Build PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
 
 # IDE
 .vscode/
