@@ -6,6 +6,7 @@
 #include "Constants.h"
 #include "Pinout.h"
 #include "BatteryDriver.h"
+#include "BatterySafety.h"
 #include "UltrasonicDriver.h"
 #include "MotionEngine.h"
 
@@ -75,14 +76,16 @@ static const char* motionModeToString(MotionMode mode) {
 }
 
 static bool applyMoveCommand(const String& cmd) {
+    uint16_t speed = batterySafetyLimitSpeed(WALK_SPEED_NORMAL);
+
     if (cmd == "forward") {
-        motionStart(MOTION_WALK_FORWARD, WALK_SPEED_NORMAL);
+        motionStart(MOTION_WALK_FORWARD, speed);
     } else if (cmd == "backward") {
-        motionStart(MOTION_WALK_BACKWARD, WALK_SPEED_NORMAL);
+        motionStart(MOTION_WALK_BACKWARD, speed);
     } else if (cmd == "left") {
-        motionStart(MOTION_TURN_LEFT, WALK_SPEED_NORMAL);
+        motionStart(MOTION_TURN_LEFT, speed);
     } else if (cmd == "right") {
-        motionStart(MOTION_TURN_RIGHT, WALK_SPEED_NORMAL);
+        motionStart(MOTION_TURN_RIGHT, speed);
     } else if (cmd == "stop") {
         motionStop();
     } else {
@@ -91,7 +94,7 @@ static bool applyMoveCommand(const String& cmd) {
 
     currentMoveCmd = cmd;
     currentState = motionModeToString(motionGetCurrentMode());
-    currentSpeed = motionIsMoving() ? "Normal" : "Arret";
+    currentSpeed = motionIsMoving() ? (batterySafetyIsActive() ? "Limitee" : "Normal") : "Arret";
     return true;
 }
 
@@ -132,6 +135,13 @@ void webServerInit() {
         Serial.print("[API] Move: ");
         Serial.println(cmd);
 
+        if (batterySafetyIsCritical() && cmd != "stop") {
+            motionStop();
+            currentMoveCmd = "stop";
+            request->send(409, "application/json", "{\"status\":\"battery_critical\",\"msg\":\"Batterie critique: mouvement bloque\"}");
+            return;
+        }
+
         if (!applyMoveCommand(cmd)) {
             request->send(400, "application/json", "{\"status\":\"error\",\"msg\":\"commande inconnue\"}");
             return;
@@ -155,6 +165,10 @@ void webServerInit() {
         String msg = "Action: " + type;
 
         if (type == "music") {
+            if (!batterySafetyCanUseHighPowerActions()) {
+                request->send(200, "application/json", "{\"status\":\"limited\",\"msg\":\"Batterie faible: danse bloquee\"}");
+                return;
+            }
             msg = "Musique activee";
             motionDanceSequence();
         } else if (type == "wave") {
@@ -199,7 +213,7 @@ void webServerInit() {
         }
 
         currentState = motionModeToString(motionGetCurrentMode());
-        currentSpeed = motionIsMoving() ? "Normal" : "Arret";
+        currentSpeed = motionIsMoving() ? (batterySafetyIsActive() ? "Limitee" : "Normal") : "Arret";
 
         String json = "{";
         json += "\"distance\":" + String(ultrasonicDriverGetDistanceCm(), 1) + ",";
@@ -209,6 +223,9 @@ void webServerInit() {
         json += "\"batteryVoltage\":" + String(batteryGetVoltage(), 2) + ",";
         json += "\"batteryLow\":" + String(batteryIsLow() ? "true" : "false") + ",";
         json += "\"batteryCritical\":" + String(batteryIsCritical() ? "true" : "false") + ",";
+        json += "\"batterySafety\":" + String(batterySafetyIsActive() ? "true" : "false") + ",";
+        json += "\"batterySafetyCritical\":" + String(batterySafetyIsCritical() ? "true" : "false") + ",";
+        json += "\"batterySafetyState\":\"" + String(batterySafetyGetState()) + "\",";
         json += "\"state\":\"" + currentState + "\",";
         json += "\"speed\":\"" + currentSpeed + "\",";
         json += "\"move\":\"" + currentMoveCmd + "\",";

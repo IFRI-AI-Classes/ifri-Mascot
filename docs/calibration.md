@@ -115,6 +115,8 @@ Constantes:
 #define BATTERY_CRITICAL_VOLTAGE 3.1f
 #define BATTERY_MAX_VOLTAGE      4.2f
 #define BATTERY_DIVIDER_RATIO    2.0f
+#define BATTERY_SAFETY_PERCENT   20
+#define BATTERY_CRITICAL_PERCENT 5
 ```
 
 Procedure:
@@ -123,6 +125,12 @@ Procedure:
 2. Lire `batteryVoltage` dans `/api/status`.
 3. Si la valeur firmware est fausse, ajuster `BATTERY_DIVIDER_RATIO`.
 4. Ne pas descendre sous la tension minimale recommandee de la batterie.
+
+Mode securite:
+
+- sous `BATTERY_SAFETY_PERCENT`, le firmware limite la vitesse;
+- sous `BATTERY_CRITICAL_PERCENT` ou tension critique, l'etat passe en critique;
+- le son d'alerte sera branche quand `AudioDriver` sera finalise.
 
 ## Checklist de validation mouvement
 

@@ -62,6 +62,14 @@ doivent etre transformees en etats mis a jour par `millis()`.
 - convertit tension batterie en pourcentage;
 - expose les etats faible et critique.
 
+`BatterySafety`
+
+- surveille l'etat batterie expose par `BatteryDriver`;
+- active un mode limite quand la batterie est sous le seuil de securite;
+- limite la vitesse des mouvements;
+- bloque les actions agressives comme la danse quand la batterie est faible;
+- prepare le point d'integration du futur son d'alerte batterie faible.
+
 `AudioDriver`
 
 - module present mais encore a completer pour les sons d'evenement.
@@ -138,6 +146,9 @@ Retourne notamment:
 - `batteryVoltage`
 - `batteryLow`
 - `batteryCritical`
+- `batterySafety`
+- `batterySafetyCritical`
+- `batterySafetyState`
 - `state`
 - `speed`
 - `move`

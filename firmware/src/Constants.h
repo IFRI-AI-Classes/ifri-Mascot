@@ -94,5 +94,7 @@
 #define BATTERY_DIVIDER_RATIO    2.0f  // R1=R2: tension batterie = tension ADC * 2
 #define BATTERY_SAMPLE_COUNT     16
 #define BATTERY_UPDATE_MS        500
+#define BATTERY_SAFETY_PERCENT   20
+#define BATTERY_CRITICAL_PERCENT 5
 
 #endif

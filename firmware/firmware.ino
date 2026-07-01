@@ -11,6 +11,7 @@
 #include "src/UltrasonicDriver.h"
 #include "src/AudioDriver.h"
 #include "src/BatteryDriver.h"
+#include "src/BatterySafety.h"
 #include "src/WebServer.h"
 
 void setup() {
@@ -49,6 +50,7 @@ void loop() {
   ultrasonicDriverUpdate();
   audioDriverUpdate();
   batteryDriverUpdate();
+  batterySafetyUpdate();
   webServerUpdate();
 
   yield();
