@@ -15,7 +15,11 @@
 #endif
 
 #ifndef WIFI_MAX_CLIENTS
-#define WIFI_MAX_CLIENTS 4
+#define WIFI_MAX_CLIENTS 1
+#endif
+
+#ifndef CONTROL_SESSION_TIMEOUT_MS
+#define CONTROL_SESSION_TIMEOUT_MS 30000UL
 #endif
 
 #ifndef WEB_SERVER_PORT

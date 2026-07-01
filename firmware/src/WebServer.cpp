@@ -1,5 +1,6 @@
 #include "WebServer.h"
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 #include "Constants.h"
@@ -15,6 +16,45 @@ static String currentSpeed = "Normal";
 static bool isMuted = false;
 static int audioVolume = 50;
 static String currentMoveCmd = "stop";
+static IPAddress controllerIp;
+static bool hasController = false;
+static unsigned long lastControllerSeenMs = 0;
+
+static String ipToString(const IPAddress& ip) {
+    return String(ip[0]) + "." + String(ip[1]) + "." + String(ip[2]) + "." + String(ip[3]);
+}
+
+static void refreshControllerSession() {
+    if (hasController && millis() - lastControllerSeenMs > CONTROL_SESSION_TIMEOUT_MS) {
+        hasController = false;
+        controllerIp = IPAddress();
+        motionStop();
+        currentMoveCmd = "stop";
+        currentState = "Arret";
+        currentSpeed = "Arret";
+        Serial.println("[WebServer] Session controle expiree");
+    }
+}
+
+static bool ensureController(AsyncWebServerRequest *request) {
+    refreshControllerSession();
+
+    IPAddress requestIp = request->client()->remoteIP();
+    if (!hasController) {
+        controllerIp = requestIp;
+        hasController = true;
+        Serial.print("[WebServer] Controle verrouille par ");
+        Serial.println(ipToString(controllerIp));
+    }
+
+    if (requestIp != controllerIp) {
+        request->send(423, "application/json", "{\"status\":\"locked\",\"msg\":\"controle deja utilise\"}");
+        return false;
+    }
+
+    lastControllerSeenMs = millis();
+    return true;
+}
 
 static const char* motionModeToString(MotionMode mode) {
     switch (mode) {
@@ -63,6 +103,11 @@ void webServerInit() {
     Serial.println("[WebServer] SPIFFS monte avec succes");
 
     WiFi.softAP(WIFI_SSID, WIFI_PASSWORD, WIFI_CHANNEL, 0, WIFI_MAX_CLIENTS);
+    wifi_config_t apConfig;
+    if (esp_wifi_get_config(WIFI_IF_AP, &apConfig) == ESP_OK) {
+        apConfig.ap.max_connection = WIFI_MAX_CLIENTS;
+        esp_wifi_set_config(WIFI_IF_AP, &apConfig);
+    }
     IPAddress ip = WiFi.softAPIP();
     Serial.print("[WebServer] AP demarre: ");
     Serial.println(WIFI_SSID);
@@ -74,6 +119,10 @@ void webServerInit() {
     server.on("/api/move", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (!request->hasParam("cmd")) {
             request->send(400, "application/json", "{\"status\":\"error\",\"msg\":\"param cmd manquant\"}");
+            return;
+        }
+
+        if (!ensureController(request)) {
             return;
         }
 
@@ -97,6 +146,10 @@ void webServerInit() {
             return;
         }
 
+        if (!ensureController(request)) {
+            return;
+        }
+
         String type = request->getParam("type")->value();
         String msg = "Action: " + type;
 
@@ -105,7 +158,7 @@ void webServerInit() {
             motionDanceSequence();
         } else if (type == "wave") {
             msg = "Salut !";
-            motionGreetSequence();
+            currentState = "Salut";
         } else if (type == "sleep") {
             msg = "Mode veille";
             motionStop();
@@ -139,6 +192,11 @@ void webServerInit() {
     });
 
     server.on("/api/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+        bool isController = ensureController(request);
+        if (!isController) {
+            return;
+        }
+
         currentState = motionModeToString(motionGetCurrentMode());
         currentSpeed = motionIsMoving() ? "Normal" : "Arret";
 
@@ -153,6 +211,8 @@ void webServerInit() {
         json += "\"state\":\"" + currentState + "\",";
         json += "\"speed\":\"" + currentSpeed + "\",";
         json += "\"move\":\"" + currentMoveCmd + "\",";
+        json += "\"controller\":\"" + ipToString(controllerIp) + "\",";
+        json += "\"locked\":" + String(hasController ? "true" : "false") + ",";
         json += "\"muted\":" + String(isMuted ? "true" : "false") + ",";
         json += "\"volume\":" + String(audioVolume);
         json += "}";
@@ -165,6 +225,8 @@ void webServerInit() {
 }
 
 void webServerUpdate() {
+    refreshControllerSession();
+
     static unsigned long lastUpdate = 0;
     if (millis() - lastUpdate > STATS_INTERVAL_MS) {
         lastUpdate = millis();
