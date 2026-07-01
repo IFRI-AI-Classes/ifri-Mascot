@@ -4,6 +4,7 @@
 #include <SPIFFS.h>
 #include "Constants.h"
 #include "Pinout.h"
+#include "BatteryDriver.h"
 
 // Declarations externes des autres modules
 extern void servoDriverInit();
@@ -19,7 +20,6 @@ static AsyncWebServer server(WEB_SERVER_PORT);
 
 static String currentState = "Marche";
 static String currentSpeed = "Normal";
-static int currentBattery = 78;
 static float currentDistance = 42.0f;
 static bool isMuted = false;
 static int audioVolume = 50;
@@ -104,7 +104,10 @@ void webServerInit() {
     server.on("/api/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
         json += "\"distance\":" + String(currentDistance, 1) + ",";
-        json += "\"battery\":" + String(currentBattery) + ",";
+        json += "\"battery\":" + String(batteryGetPercent()) + ",";
+        json += "\"batteryVoltage\":" + String(batteryGetVoltage(), 2) + ",";
+        json += "\"batteryLow\":" + String(batteryIsLow() ? "true" : "false") + ",";
+        json += "\"batteryCritical\":" + String(batteryIsCritical() ? "true" : "false") + ",";
         json += "\"state\":\"" + currentState + "\",";
         json += "\"speed\":\"" + currentSpeed + "\",";
         json += "\"muted\":" + String(isMuted ? "true" : "false") + ",";

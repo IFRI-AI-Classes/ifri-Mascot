@@ -10,6 +10,7 @@
 #include "src/MotionEngine.h"
 #include "src/UltrasonicDriver.h"
 #include "src/AudioDriver.h"
+#include "src/BatteryDriver.h"
 #include "src/WebServer.h"
 
 void setup() {
@@ -31,6 +32,9 @@ void setup() {
   Serial.println("[Setup] Initialisation AudioDriver...");
   audioDriverInit();
 
+  Serial.println("[Setup] Initialisation BatteryDriver...");
+  batteryDriverInit();
+
   Serial.println("[Setup] Initialisation WebServer...");
   webServerInit();
 
@@ -44,6 +48,7 @@ void loop() {
   motionEngineUpdate();
   ultrasonicDriverUpdate();
   audioDriverUpdate();
+  batteryDriverUpdate();
   webServerUpdate();
 
   delay(1);

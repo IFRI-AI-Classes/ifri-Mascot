@@ -75,8 +75,12 @@
 #define OBSTACLE_DISTANCE_STOP  10    // Distance d'arrêt d'urgence (cm)
 
 // ======== BATTERY ========
-#define BATTERY_LOW_VOLTAGE     3.0   // Tension batterie faible (V)
-#define BATTERY_WARNING_VOLTAGE 3.3   // Tension d'avertissement (V)
-#define BATTERY_MAX_VOLTAGE     4.2   // Tension maximale (V pour Li-Po)
+#define BATTERY_MIN_VOLTAGE      3.0f  // 0% pour Li-Po 1S
+#define BATTERY_LOW_VOLTAGE      3.3f  // Alerte faible
+#define BATTERY_CRITICAL_VOLTAGE 3.1f  // Alerte critique
+#define BATTERY_MAX_VOLTAGE      4.2f  // 100% pour Li-Po 1S
+#define BATTERY_DIVIDER_RATIO    2.0f  // R1=R2: tension batterie = tension ADC * 2
+#define BATTERY_SAMPLE_COUNT     16
+#define BATTERY_UPDATE_MS        500
 
 #endif
