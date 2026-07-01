@@ -119,6 +119,9 @@
     }
     .pill svg { width: 15px; height: 15px; }
     .install-btn { color: var(--green); }
+    .install-btn[hidden] { display: none; }
+    .install-help-btn { color: var(--amber); }
+    .install-help-btn[hidden] { display: none; }
     .mute-btn { color: var(--red); }
     .offline { color: var(--red); }
 
@@ -328,6 +331,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
           <span>Installer</span>
         </button>
+        <button class="pill install-help-btn" id="install-help-btn" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+          <span>Ajouter</span>
+        </button>
         <button class="pill mute-btn" onclick="sendAction('mute')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4V5z"></path><path d="m19 9-6 6"></path><path d="m13 9 6 6"></path></svg>
         </button>
@@ -446,6 +453,24 @@
       showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
+    function isStandaloneApp() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function updateInstallControls() {
+      const installButton = byId('install-btn');
+      const helpButton = byId('install-help-btn');
+
+      if (isStandaloneApp()) {
+        installButton.hidden = true;
+        helpButton.hidden = true;
+        return;
+      }
+
+      installButton.hidden = !deferredInstallPrompt;
+      helpButton.hidden = Boolean(deferredInstallPrompt);
+    }
+
     function setActiveCommand(command) {
       document.querySelectorAll('[data-cmd]').forEach(button => {
         button.classList.toggle('active', button.dataset.cmd === command && command !== 'stop');
@@ -529,6 +554,7 @@
     window.addEventListener('beforeinstallprompt', event => {
       event.preventDefault();
       deferredInstallPrompt = event;
+      updateInstallControls();
     });
 
     byId('install-btn').addEventListener('click', async () => {
@@ -540,7 +566,19 @@
       deferredInstallPrompt.prompt();
       await deferredInstallPrompt.userChoice.catch(() => {});
       deferredInstallPrompt = null;
+      updateInstallControls();
     });
+
+    byId('install-help-btn').addEventListener('click', () => {
+      showToast('Menu navigateur: Ajouter');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      updateInstallControls();
+    });
+
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', updateInstallControls);
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -551,6 +589,7 @@
     }
 
     window.addEventListener('contextmenu', event => event.preventDefault());
+    updateInstallControls();
     window.setInterval(pollStats, 1000);
     pollStats();
   </script>
