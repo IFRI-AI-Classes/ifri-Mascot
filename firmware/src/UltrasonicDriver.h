@@ -4,4 +4,9 @@
 void ultrasonicDriverInit();
 void ultrasonicDriverUpdate();
 
+float ultrasonicDriverGetDistance();
+float ultrasonicDriverGetDistanceCm();
+bool ultrasonicDriverHasValidMeasure();
+bool ultrasonicDriverIsObstacleDetected();
+
 #endif
